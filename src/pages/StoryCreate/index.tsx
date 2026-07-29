@@ -1,7 +1,6 @@
-import { PageTemplate } from '../../components'
+import StoryCreateApp from '../../modules/StoryCreate/StoryCreateApp'
+import '../../modules/StoryCreate/styles/global.css'
+import '../../modules/StoryCreate/styles/responsive.css'
+import '../../modules/StoryCreate/styles/candy-redesign.css'
 
-function StoryCreate() {
-  return <PageTemplate title="故事共创任务模块" description="模块内容待开发。" />
-}
-
-export default StoryCreate
+export default StoryCreateApp

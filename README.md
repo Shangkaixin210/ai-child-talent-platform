@@ -1,32 +1,42 @@
-# React + TypeScript + Vite
+# AI 儿童天赋平台
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Vite + React + TypeScript 总平台，故事共创模块已接入 `/story-create`。
 
-Currently, two official plugins are available:
+## 启动总前端
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```powershell
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+前端默认地址：`http://localhost:5173`
+
+## 启动故事共创后端
+
+首次启动：
+
+```powershell
+cd story-backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+按需填写 `.env` 中的模型密钥，然后启动：
+
+```powershell
+python -m uvicorn app.main:app --reload --port 8000
+```
+
+开发环境中，Vite 会把 `/api` 请求代理到 `http://localhost:8000`。
+
+## 故事模块路由
+
+- `/story-create`：故事首页
+- `/story-create/login`：故事登录
+- `/story-create/channel`：年龄通道
+- `/story-create/characters`：角色创建
+- `/story-create/play/:storyId`：故事共创
+- `/story-create/gallery`：故事书架
+- `/story-create/talent/:storyId`：故事天赋报告
