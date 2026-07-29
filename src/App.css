@@ -1,0 +1,46 @@
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.page__content {
+  width: min(760px, 100%);
+  padding: 40px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
+}
+
+.page__title {
+  margin: 0 0 12px;
+  color: #111827;
+  font-size: 28px;
+}
+
+.page__description {
+  margin: 0 0 28px;
+  color: #6b7280;
+}
+
+.page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.page-nav a {
+  padding: 9px 14px;
+  border-radius: 8px;
+  color: #1d4ed8;
+  background: #eff6ff;
+  text-decoration: none;
+}
+
+.page-nav a.active {
+  color: #ffffff;
+  background: #2563eb;
+}
