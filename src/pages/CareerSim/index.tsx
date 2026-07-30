@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
-const careerAppUrl = import.meta.env.VITE_CAREER_SIM_URL || 'http://127.0.0.1:8001/'
+// 职业体验已随总平台后端（8000）统一启动；访问局域网地址时也会自动沿用当前主机。
+const careerAppUrl = import.meta.env.VITE_CAREER_SIM_URL
+  || `${window.location.protocol}//${window.location.hostname}:8000/`
 
 function CareerSim() {
   const [loading, setLoading] = useState(true)
@@ -20,7 +22,7 @@ function CareerSim() {
         <section style={{ maxWidth: 620, margin: '0 auto', padding: '96px 24px', color: '#5e493a', lineHeight: 1.8 }}>
           <h1 style={{ color: '#b86b45' }}>职业体验服务暂未启动</h1>
           <p>请先在“职业体验模拟器”文件夹启动 FastAPI 服务：</p>
-          <pre style={{ padding: 14, borderRadius: 12, background: '#fff', overflow: 'auto' }}>uvicorn main:app --host 127.0.0.1 --port 8001</pre>
+          <pre style={{ padding: 14, borderRadius: 12, background: '#fff', overflow: 'auto' }}>uvicorn app.main:app --host 0.0.0.0 --port 8000</pre>
           <p>服务启动后，刷新本页即可进入体验。</p>
         </section>
       )}
