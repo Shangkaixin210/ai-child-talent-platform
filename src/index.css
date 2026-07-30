@@ -1,9 +1,17 @@
 :root {
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #111827;
-  background: #f8fafc;
+  font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans SC", system-ui, sans-serif;
+  color: #18334f;
+  background: #f7fbff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -16,4 +24,18 @@ button,
 input,
 textarea {
   font: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  color: #fff;
+  background: #625ee8;
+}
+
+:focus-visible {
+  outline: 3px solid rgba(78, 190, 231, 0.65);
+  outline-offset: 3px;
 }
