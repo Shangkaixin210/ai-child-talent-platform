@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build:deep-sea": "npm --prefix \"深海基地创建游戏\" run build",
-    "build": "npm run build:deep-sea && tsc -b && vite build",
+    "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview"
   },

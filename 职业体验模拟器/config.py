@@ -29,6 +29,14 @@ APP_VERSION = "1.0.0"
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 # 教师关注队列使用独立密钥保护；未配置时，相关接口保持关闭，避免把学生安全记录暴露出来。
 TEACHER_REVIEW_KEY = os.getenv("TEACHER_REVIEW_KEY", "").strip()
+CORS_ORIGINS = [
+    origin.strip().rstrip("/")
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:5173,http://127.0.0.1:5173",
+    ).split(",")
+    if origin.strip()
+]
 
 DECISION_TOO_FAST_MS = 1000
 DECISION_TOO_SLOW_MS = 300000

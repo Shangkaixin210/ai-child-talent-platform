@@ -1,6 +1,10 @@
-// Dev: Vite proxy handles /api → localhost:8000
-// Prod: set VITE_API_URL to your backend URL, e.g. https://your-backend.onrender.com
-const BASE_URL = (import.meta.env.VITE_API_URL || '') + '/api/v1';
+// 本地开发留空时由 Vite 代理 /api；部署时填写故事后端的公网 HTTPS 地址。
+const STORY_API_ORIGIN = (
+  import.meta.env.VITE_STORY_API_URL
+  || import.meta.env.VITE_API_URL
+  || ''
+).replace(/\/+$/, '');
+const BASE_URL = `${STORY_API_ORIGIN}/api/v1`;
 
 function getToken(): string | null {
   return localStorage.getItem('auth_token');

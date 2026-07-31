@@ -10,6 +10,7 @@ import edge_tts
 from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, HTTPException, Form, Body, Depends, Header
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -61,6 +62,13 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 app = FastAPI(title=APP_TITLE, version="1.0.0", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 # Windows may not know the WebP extension by default; declare it so mobile browsers receive image content correctly.
 mimetypes.add_type("image/webp", ".webp")
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")

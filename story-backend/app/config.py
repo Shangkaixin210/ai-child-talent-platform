@@ -31,6 +31,15 @@ class Settings(BaseSettings):
 
     # App
     debug: bool = True
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+
+    @property
+    def allowed_origins(self) -> list[str]:
+        return [
+            origin.strip().rstrip("/")
+            for origin in self.cors_origins.split(",")
+            if origin.strip()
+        ]
 
     # Resolve the env file from the source tree, not the process working directory.
     model_config = {"env_file": str(BACKEND_DIR / ".env"), "env_file_encoding": "utf-8"}

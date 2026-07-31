@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getToken } from '../../api/client';
+import { BASE_URL, getToken } from '../../api/client';
 import './WordLookup.css';
 
 interface WordLookupProps {
@@ -18,7 +18,7 @@ async function lookupWord(word: string): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10000);
     const resp = await fetch(
-      `/api/v1/dictionary/lookup?word=${encodeURIComponent(key)}`,
+      `${BASE_URL}/dictionary/lookup?word=${encodeURIComponent(key)}`,
       {
         signal: controller.signal,
         headers: token ? { Authorization: `Bearer ${token}` } : {},
