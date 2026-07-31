@@ -2,6 +2,8 @@
 AI Service — Two layers: Mentor (follow-up) + Observer (narrative).
 Scoring is anchored in career_data indicators; AI adjusts and narrates.
 """
+from __future__ import annotations
+
 import json, re
 from typing import Optional
 from datetime import datetime, timezone

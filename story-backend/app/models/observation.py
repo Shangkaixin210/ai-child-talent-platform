@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import CheckConstraint, DateTime, ForeignKey, func, Integer, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -32,27 +33,27 @@ class Observation(Base):
     turn_number: Mapped[int] = mapped_column(Integer, nullable=False)
 
     # ── New 5-dimension system ──
-    vocabulary_semantic: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    vocabulary_semantic_examples: Mapped[str | None] = mapped_column(Text, nullable=True)
-    sentence_fluency: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    sentence_fluency_examples: Mapped[str | None] = mapped_column(Text, nullable=True)
-    narrative_completeness: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    narrative_structure_note: Mapped[str | None] = mapped_column(Text, nullable=True)
-    character_empathy: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    character_empathy_examples: Mapped[str | None] = mapped_column(Text, nullable=True)
-    creative_initiative: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    creative_initiative_examples: Mapped[str | None] = mapped_column(Text, nullable=True)
+    vocabulary_semantic: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    vocabulary_semantic_examples: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    sentence_fluency: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    sentence_fluency_examples: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    narrative_completeness: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    narrative_structure_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    character_empathy: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    character_empathy_examples: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    creative_initiative: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    creative_initiative_examples: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # ── Legacy fields (keep for backward compat) ──
-    vocabulary_richness: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    vocabulary_examples: Mapped[str | None] = mapped_column(Text, nullable=True)
-    descriptive_ability: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    descriptive_examples: Mapped[str | None] = mapped_column(Text, nullable=True)
-    story_structure: Mapped[int | None] = mapped_column(Integer, nullable=True)
-    structure_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    vocabulary_richness: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    vocabulary_examples: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    descriptive_ability: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    descriptive_examples: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    story_structure: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    structure_note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
-    creativity_flags: Mapped[str | None] = mapped_column(Text, nullable=True)
-    raw_observation: Mapped[str | None] = mapped_column(Text, nullable=True)
+    creativity_flags: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    raw_observation: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     story = relationship("Story", back_populates="observations")

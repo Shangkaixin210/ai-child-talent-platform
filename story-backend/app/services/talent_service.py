@@ -3,6 +3,7 @@
 Only observations attached to genuine child messages are used. Historical
 stories belonging to the same account provide the persistent progress memory.
 """
+from __future__ import annotations
 
 import json
 import re

@@ -2,6 +2,8 @@
 Authentication module — password hashing, token management, FastAPI dependencies.
 Uses only Python stdlib (hashlib.pbkdf2_hmac + os.urandom) — no extra deps.
 """
+from __future__ import annotations
+
 import os
 import hashlib
 import secrets

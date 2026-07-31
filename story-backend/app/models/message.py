@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import DateTime, ForeignKey, func, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,7 +15,7 @@ class StoryMessage(Base):
     turn_number: Mapped[int] = mapped_column(Integer, nullable=False)
     role: Mapped[str] = mapped_column(String(10), nullable=False)  # "ai" | "child"
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    ai_raw_response: Mapped[str | None] = mapped_column(Text, nullable=True)
+    ai_raw_response: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     story = relationship("Story", back_populates="messages")

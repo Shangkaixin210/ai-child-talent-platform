@@ -1,6 +1,8 @@
 """
 Career Experience Simulator — FastAPI Application
 """
+from __future__ import annotations
+
 import uuid, traceback, sys, hashlib, re, mimetypes, json, secrets
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent / "vendor"))
