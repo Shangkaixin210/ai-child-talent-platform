@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 // AI伯乐·探索空间 聊天模块（独立 Express 进程，端口 3000）
 // 仅开放学生端入口，教师端不可从此处访问
-const scoutChatUrl = 'http://localhost:3000/login.html?role=student'
+const scoutChatUrl = 'http://localhost:3000/login.html?role=student&parentOrigin=http://localhost:5173'
 
 function ChatObserve() {
   const [loading, setLoading] = useState(true)
