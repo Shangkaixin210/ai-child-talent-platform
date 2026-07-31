@@ -38,16 +38,6 @@ const modules = [
     action: '选择职业',
     tone: 'green',
   },
-  {
-    path: '/scout',
-    number: '05',
-    icon: '✦',
-    title: 'AI伯乐·探索空间',
-    description: '和 AI 伯乐自由聊天，在真实对话中发现孩子的独特潜能与天赋方向。',
-    action: '进入探索空间',
-    tone: 'indigo',
-    featured: true,
-  },
 ]
 
 function Login() {

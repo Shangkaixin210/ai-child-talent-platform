@@ -404,12 +404,6 @@
   --card-line: #c8eddd;
 }
 
-.module-card--indigo {
-  --card: #5b5fc7;
-  --card-soft: #f0efff;
-  --card-line: #d4d2ff;
-}
-
 .module-card__top {
   display: flex;
   align-items: center;
