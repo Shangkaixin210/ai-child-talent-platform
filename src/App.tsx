@@ -5,6 +5,7 @@ import CareerSim from './pages/CareerSim'
 import ChatObserve from './pages/ChatObserve'
 import Login from './pages/Login'
 import Report from './pages/Report'
+import ScoutChat from './pages/ScoutChat'
 import StoryCreate from './pages/StoryCreate'
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/story-create/*" element={<StoryCreate />} />
         <Route path="/campus-design" element={<CampusDesign />} />
         <Route path="/career-sim" element={<CareerSim />} />
+        <Route path="/scout" element={<ScoutChat />} />
         <Route path="/report" element={<Report />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
