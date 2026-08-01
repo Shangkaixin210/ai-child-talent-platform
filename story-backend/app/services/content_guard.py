@@ -342,8 +342,12 @@ def clean_submitted_text(text: str) -> CleanTextResult:
 
 
 def sanitize_agent_output(text: str) -> str:
-    """Last-line defense for all child-visible model output."""
-    sanitized, _ = redact_privacy(text)
+    """Keep child-visible model output age-appropriate without redacting fiction.
+
+    Privacy redaction belongs to child-supplied input. Names, addresses and number-like
+    details created by the story director are fictional story content and must remain.
+    """
+    sanitized = text
     replacements = {
         "死亡": "远行", "死去": "去远方生活", "死了": "沉沉睡去",
         "杀死": "安全地拦住", "杀掉": "温和地制止", "打死": "劝它停下来",

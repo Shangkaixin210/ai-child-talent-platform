@@ -133,7 +133,6 @@ export function useSSE() {
         dispatch({
           type: 'APPEND_NARRATIVE_CHUNK',
           text: data.text as string,
-          imageUrl: data.image_url as string | undefined,
         });
         break;
 
@@ -147,14 +146,7 @@ export function useSSE() {
         dispatch({
           type: 'APPEND_ENDING',
           text: data.text as string,
-          imageUrl: data.image_url as string | undefined,
         });
-        break;
-
-      case 'illustration':
-        if (typeof data.image_url === 'string' && data.image_url) {
-          dispatch({ type: 'SET_AI_IMAGE', imageUrl: data.image_url });
-        }
         break;
 
       case 'question':

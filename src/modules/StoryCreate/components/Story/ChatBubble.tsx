@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useTTS } from '../../hooks/useTTS';
 import PinyinText from './PinyinText';
 import WordLookup from './WordLookup';
+import PngIcon from '../Shared/PngIcon';
 import './ChatBubble.css';
 
 interface ChatBubbleProps {
@@ -9,7 +10,6 @@ interface ChatBubbleProps {
   content: string;
   isStreaming?: boolean;
   isQuestion?: boolean;
-  imageUrl?: string;
   isEnding?: boolean;
   showPinyin?: boolean;
   fontSize?: 's' | 'm' | 'l';
@@ -45,7 +45,6 @@ export default function ChatBubble({
   content,
   isStreaming,
   isQuestion,
-  imageUrl,
   isEnding,
   showPinyin,
   fontSize,
@@ -71,12 +70,17 @@ export default function ChatBubble({
   }, []);
 
   const handleTTS = () => speaking ? stop() : speak(content);
-  if (!content && !imageUrl) return null;
+  if (!content) return null;
 
   return (
     <div className={cls}>
       <div className="chat-avatar">
-        {role === 'fairy' ? <FairyStar /> : role === 'ai' ? '🎬' : '🧒'}
+        {role === 'fairy'
+          ? <FairyStar />
+          : role === 'ai'
+            ? <PngIcon name="story-director" size={44} />
+            : <PngIcon name="child-explorer" size={44} />
+        }
       </div>
       <div className="chat-body">
         {role === 'fairy' && <span className="story-fairy-name">故事精灵</span>}
@@ -98,12 +102,6 @@ export default function ChatBubble({
           </button>
         )}
 
-        {imageUrl && (
-          <div className="chat-img">
-            <img src={imageUrl} alt="故事插图" loading="lazy" style={{ minHeight: 100, background: '#f0f0f0' }} />
-            <span className="chat-img-label">AI 生成</span>
-          </div>
-        )}
       </div>
 
       {lookup && (

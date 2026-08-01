@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import Button from '../Shared/Button';
+import PngIcon from '../Shared/PngIcon';
 import { useAuth } from '../../contexts/AuthContext';
-import { AVATAR_EMOJI, AVATAR_LABELS } from './CharacterCard';
+import { AVATAR_ICONS, AVATAR_LABELS } from './CharacterCard';
 import './CharacterCreator.css';
 
-const AVATAR_TYPES = Object.keys(AVATAR_EMOJI);
+const AVATAR_TYPES = Object.keys(AVATAR_ICONS);
 
 interface CharacterCreatorProps {
   onCreate: (data: { nickname: string; avatar_type: string; avatar_color: string; personality?: string; age_group: '4-7' | '8-12' }) => Promise<void>;
@@ -22,11 +23,6 @@ export default function CharacterCreator({ onCreate }: CharacterCreatorProps) {
 
   function getEffectiveAvatarType(): string {
     return isCustomAvatar ? customAvatarType.trim() : avatarType;
-  }
-
-  function getPreviewEmoji(): string {
-    if (isCustomAvatar) return '\u{1F9B8}';  // superhero emoji
-    return AVATAR_EMOJI[avatarType] || '\u{1F31F}';  // star
   }
 
   function getPreviewLabel(): string {
@@ -88,7 +84,7 @@ export default function CharacterCreator({ onCreate }: CharacterCreatorProps) {
               onClick={() => { setIsCustomAvatar(false); setAvatarType(type); }}
               title={AVATAR_LABELS[type]}
             >
-              <span className="avatar-option-emoji">{AVATAR_EMOJI[type]}</span>
+              <span className="avatar-option-emoji"><PngIcon name={AVATAR_ICONS[type]} size={54} /></span>
               <span className="avatar-option-label">{AVATAR_LABELS[type]}</span>
             </button>
           ))}
@@ -117,7 +113,7 @@ export default function CharacterCreator({ onCreate }: CharacterCreatorProps) {
       </div>
 
       <div className="creator-preview">
-        <span className="preview-emoji">{getPreviewEmoji()}</span>
+        <span className="preview-emoji"><PngIcon name={isCustomAvatar ? 'theme-hero' : AVATAR_ICONS[avatarType]} size={74} /></span>
         <div className="preview-info">
           <span className="preview-name">{nickname || '你的角色'}</span>
           <span className="preview-type">{getPreviewLabel()}</span>

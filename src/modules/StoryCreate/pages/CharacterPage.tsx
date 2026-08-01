@@ -11,18 +11,19 @@ import CharacterCard from "../components/Character/CharacterCard";
 import CharacterCreator from "../components/Character/CharacterCreator";
 import Button from "../components/Shared/Button";
 import Loading from "../components/Shared/Loading";
+import PngIcon, { type StoryPngIconName } from "../components/Shared/PngIcon";
 import "./CharacterPage.css";
 
 const THEMES = [
-  { value: "", label: "让AI导演决定", emoji: "🎲" },
-  { value: "太空冒险", label: "太空冒险", emoji: "🚀" },
-  { value: "魔法森林", label: "魔法森林", emoji: "🌳" },
-  { value: "海底世界", label: "海底世界", emoji: "🌊" },
-  { value: "恐龙时代", label: "恐龙时代", emoji: "🦕" },
-  { value: "童话王国", label: "童话王国", emoji: "🏰" },
-  { value: "超级英雄", label: "超级英雄", emoji: "🦸" },
-  { value: "__custom__", label: "自定义", emoji: "✏️" },
-];
+  { value: "", label: "让AI导演决定", icon: "theme-random" },
+  { value: "太空冒险", label: "太空冒险", icon: "theme-space" },
+  { value: "魔法森林", label: "魔法森林", icon: "theme-forest" },
+  { value: "海底世界", label: "海底世界", icon: "theme-ocean" },
+  { value: "恐龙时代", label: "恐龙时代", icon: "theme-dinosaur" },
+  { value: "童话王国", label: "童话王国", icon: "theme-castle" },
+  { value: "超级英雄", label: "超级英雄", icon: "theme-hero" },
+  { value: "__custom__", label: "自定义", icon: "action-write" },
+] satisfies Array<{ value: string; label: string; icon: StoryPngIconName }>;
 
 export default function CharacterPage() {
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -115,7 +116,7 @@ export default function CharacterPage() {
           <h2 className="section-title"> 我的角色</h2>
           {characters.length === 0 ? (
             <div className="character-empty">
-              <span className="character-empty-emoji">🦊</span>
+              <PngIcon name="avatar-explorer" size={150} />
               <p>
                 还没有角色哦，
                 <br />
@@ -146,13 +147,13 @@ export default function CharacterPage() {
             {selectedChar && (
               <div className="creator-start-col">
                 <div className="start-story-card animate-slide-up">
-                  <h3 className="section-title">🚀 开始故事</h3>
+                  <h3 className="section-title"><PngIcon name="theme-space" size={34} /> 开始故事</h3>
                   <p className="start-story-char">
                     角色：<strong>{selectedChar.nickname}</strong>
                   </p>
 
                   <div className="start-field">
-                    <label>📝 故事名字（可选）</label>
+                    <label><PngIcon name="action-write" size={24} /> 故事名字（可选）</label>
                     <input
                       type="text"
                       value={storyTitle}
@@ -171,7 +172,7 @@ export default function CharacterPage() {
                           className={`theme-option ${theme === t.value ? "theme-option-selected" : ""}`}
                           onClick={() => setTheme(t.value)}
                         >
-                          <span>{t.emoji}</span>
+                          <PngIcon name={t.icon} size={42} />
                           <span>{t.label}</span>
                         </button>
                       ))}
@@ -189,7 +190,7 @@ export default function CharacterPage() {
                     )}
                   </div>
 
-                  {error && <p className="start-error">😅 {error}</p>}
+                  {error && <p className="start-error">{error}</p>}
 
                   <Button
                     variant="accent"
@@ -197,7 +198,7 @@ export default function CharacterPage() {
                     onClick={handleStartStory}
                     disabled={starting}
                   >
-                    {starting ? "准备中..." : "✨ 开始创作故事"}
+                    {starting ? "准备中..." : "开始创作故事"}
                   </Button>
                 </div>
               </div>

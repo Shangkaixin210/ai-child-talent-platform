@@ -1,4 +1,5 @@
 import type { Character } from '../../api/endpoints';
+import PngIcon, { type StoryPngIconName } from '../Shared/PngIcon';
 import './CharacterCard.css';
 
 interface CharacterCardProps {
@@ -8,15 +9,15 @@ interface CharacterCardProps {
   selected?: boolean;
 }
 
-const AVATAR_EMOJI: Record<string, string> = {
-  astronaut: '🧑‍🚀',
-  dragon: '🐲',
-  fairy: '🧚',
-  pirate: '🏴‍☠️',
-  robot: '🤖',
-  explorer: '🧭',
-  wizard: '🧙',
-  mermaid: '🧜‍♀️',
+const AVATAR_ICONS: Record<string, StoryPngIconName> = {
+  astronaut: 'avatar-astronaut',
+  dragon: 'avatar-dragon',
+  fairy: 'avatar-fairy',
+  pirate: 'avatar-pirate',
+  robot: 'avatar-robot',
+  explorer: 'avatar-explorer',
+  wizard: 'avatar-wizard',
+  mermaid: 'avatar-mermaid',
 };
 
 const AVATAR_LABELS: Record<string, string> = {
@@ -31,7 +32,7 @@ const AVATAR_LABELS: Record<string, string> = {
 };
 
 export default function CharacterCard({ character, onSelect, onDelete, selected }: CharacterCardProps) {
-  const emoji = AVATAR_EMOJI[character.avatar_type] || '🌟';
+  const icon = AVATAR_ICONS[character.avatar_type] || 'child-explorer';
   const label = AVATAR_LABELS[character.avatar_type] || character.avatar_type;
 
   return (
@@ -41,7 +42,7 @@ export default function CharacterCard({ character, onSelect, onDelete, selected 
       style={{ borderColor: selected ? character.avatar_color : undefined }}
     >
       <div className="character-avatar" style={{ backgroundColor: character.avatar_color + '20' }}>
-        <span className="character-emoji">{emoji}</span>
+        <span className="character-emoji"><PngIcon name={icon} size={72} /></span>
       </div>
       <div className="character-info">
         <h3 className="character-nickname">{character.nickname}</h3>
@@ -56,11 +57,11 @@ export default function CharacterCard({ character, onSelect, onDelete, selected 
           }}
           title="删除角色"
         >
-          🗑️
+          <PngIcon name="action-delete" size={23} />
         </button>
       )}
     </div>
   );
 }
 
-export { AVATAR_EMOJI, AVATAR_LABELS };
+export { AVATAR_ICONS, AVATAR_LABELS };

@@ -5,6 +5,7 @@ import { ApiError } from '../api/client';
 import { useAuth } from '../contexts/AuthContext';
 import Button from '../components/Shared/Button';
 import './LoginPage.css';
+import PngIcon from '../components/Shared/PngIcon';
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false);
@@ -57,7 +58,7 @@ export default function LoginPage() {
       </div>
       <div className="login-card">
         <div className="login-header">
-          <span className="login-icon">✦</span>
+          <span className="login-icon"><PngIcon name="story-book" size={72} /></span>
           
           
         </div>
@@ -98,10 +99,10 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && <p className="login-err">😅 {error}</p>}
+          {error && <p className="login-err">{error}</p>}
 
           <Button type="submit" variant="primary" size="lg" disabled={loading}>
-            {loading ? '请稍候...' : isRegister ? '✨ 注册并开始' : '🚀 登录'}
+            {loading ? '请稍候...' : isRegister ? '注册并开始' : '登录'}
           </Button>
         </form>
 

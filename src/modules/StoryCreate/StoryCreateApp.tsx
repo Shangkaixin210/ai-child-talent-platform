@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { StoryProvider } from './contexts/StoryContext'
 import Background from './components/Layout/Background'
@@ -26,6 +26,8 @@ function ChannelGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   if (loading) return <Loading text="加载中..." />
   if (!user) return <Navigate to={`${STORY_ROOT}/login`} replace />
+  const isWaitingForOnboarding = sessionStorage.getItem('ai_bole_show_onboarding') === 'true'
+  if (!user.age_group && isWaitingForOnboarding) return <>{children}</>
   if (!user.age_group) return <Navigate to={`${STORY_ROOT}/channel`} replace />
   return <>{children}</>
 }
@@ -93,16 +95,35 @@ function StoryRoutes() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="parent"
+        element={
+          <ProtectedRoute>
+            <GalleryPage parentMode />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="parent/talent/:storyId"
+        element={
+          <ProtectedRoute>
+            <TalentPage parentView />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<Navigate to={STORY_ROOT} replace />} />
     </Routes>
   )
 }
 
 export default function StoryCreateApp() {
+  const { pathname } = useLocation()
+  const isStoryPlayPage = pathname.startsWith(`${STORY_ROOT}/play/`)
+
   return (
     <AuthProvider>
       <Background />
-      <Header />
+      {!isStoryPlayPage && <Header />}
       <MusicPlayer />
       <StoryRoutes />
     </AuthProvider>

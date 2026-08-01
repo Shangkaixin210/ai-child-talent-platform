@@ -1,41 +1,42 @@
 import { useState } from 'react';
 import Button from './Button';
+import PngIcon, { type StoryPngIconName } from './PngIcon';
 import './Onboarding.css';
 
 interface Step {
-  emoji: string;
+  icon: StoryPngIconName;
   title: string;
   desc: string;
 }
 
 const STEPS: Step[] = [
   {
-    emoji: '👋',
+    icon: 'child-explorer',
     title: '欢迎来到 AI 伯乐！',
     desc: '这里不是普通的讲故事游戏——你将会和一位故事导演一起创作属于你的故事，而我们会在这个过程中发现你的语言天赋！',
   },
   {
-    emoji: '🎯',
+    icon: 'story-director',
     title: '选择你的故事通道',
     desc: '创建角色时，先选择「幼儿通道（4-7岁）」或「学龄通道（8-12岁）」。AI 会根据你的年龄调整故事难度和互动方式。',
   },
   {
-    emoji: '🎭',
+    icon: 'theme-hero',
     title: '创建你的专属角色',
     desc: '给你的角色取个名字、选个形象、写一段人设（比如"一位善良勇敢的小精灵"），还可以自定义形象和故事主题！',
   },
   {
-    emoji: '🎬',
+    icon: 'story-director',
     title: '和故事导演一起创作',
     desc: '故事导演会先讲一段故事，然后问你一个问题。你回答后，导演会根据你的想法继续推进剧情——就这样一来一回，故事就写成了！',
   },
   {
-    emoji: '🧠',
-    title: '发现你的语言天赋',
-    desc: '故事完成后，你会收到一份「天赋画像」——从词汇、表达、叙事、共情、创造力五个维度分析你的语言能力，并给出成长建议。',
+    icon: 'talent-brain',
+    title: '收藏你的创作亮点',
+    desc: '故事完成后，你会看到精彩瞬间、创作亮点和下一步小建议。详细的成长分析会放在家长端。',
   },
   {
-    emoji: '🚀',
+    icon: 'theme-space',
     title: '准备好了吗？',
     desc: '点击「开始冒险」，创建你的第一个角色，让故事开始吧！',
   },
@@ -59,7 +60,7 @@ export default function Onboarding({ onFinish }: OnboardingProps) {
           ))}
         </div>
 
-        <span className="onboarding-emoji">{current.emoji}</span>
+        <span className="onboarding-emoji"><PngIcon name={current.icon} size={96} /></span>
         <h2 className="onboarding-title">{current.title}</h2>
         <p className="onboarding-desc">{current.desc}</p>
 
@@ -70,7 +71,7 @@ export default function Onboarding({ onFinish }: OnboardingProps) {
             </Button>
           )}
           <Button variant="primary" size="lg" onClick={() => isLast ? onFinish() : setStep(step + 1)}>
-            {isLast ? '✨ 开始冒险' : '下一步 →'}
+            {isLast ? '开始冒险' : '下一步 →'}
           </Button>
         </div>
 

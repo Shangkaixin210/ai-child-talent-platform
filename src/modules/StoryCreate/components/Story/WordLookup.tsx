@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getToken } from '../../api/client';
 import './WordLookup.css';
+import PngIcon from '../Shared/PngIcon';
 
 interface WordLookupProps {
   selectedText: string;
@@ -68,7 +69,7 @@ export default function WordLookup({ selectedText, position, onClose }: WordLook
   return (
     <div className="word-lookup-popup" ref={popupRef} style={{ left: x, top: Math.max(y, 10) }}>
       <div className="word-lookup-header">
-        <span className="word-lookup-title">📖 {word}</span>
+        <span className="word-lookup-title"><PngIcon name="story-book" size={28} /> {word}</span>
         <button className="word-lookup-close" onClick={onClose}>✕</button>
       </div>
       <p className="word-lookup-def">{definition}</p>

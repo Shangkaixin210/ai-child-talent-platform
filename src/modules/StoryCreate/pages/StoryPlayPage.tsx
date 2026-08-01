@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSSE } from '../hooks/useSSE';
 import {
@@ -13,18 +14,8 @@ import TypingIndicator from '../components/Story/TypingIndicator';
 import StoryFairyFloating from '../components/Story/StoryFairyFloating';
 import Button from '../components/Shared/Button';
 import Loading from '../components/Shared/Loading';
+import PngIcon from '../components/Shared/PngIcon';
 import './StoryPlayPage.css';
-
-function extractStoredImageUrl(message: StoryMessage): string | undefined {
-  if (!message.ai_raw_response) return undefined;
-  try {
-    const raw = JSON.parse(message.ai_raw_response) as { image_urls?: unknown };
-    if (!Array.isArray(raw.image_urls)) return undefined;
-    return raw.image_urls.find((url): url is string => typeof url === 'string' && url.length > 0);
-  } catch {
-    return undefined;
-  }
-}
 
 function extractStoredPraise(message: StoryMessage): string | undefined {
   if (!message.ai_raw_response) return undefined;
@@ -64,7 +55,6 @@ export default function StoryPlayPage() {
           role: m.role as 'ai' | 'child',
           content: m.content,
           isQuestion: false,
-          imageUrl: extractStoredImageUrl(m),
       }));
       const savedPraises = msgs
         .filter((message) => message.role === 'ai')
@@ -182,7 +172,7 @@ export default function StoryPlayPage() {
       {/* Safety notice banner */}
       {state.safetyNotice && (
         <div className={`safety-banner safety-banner-${state.safetyNotice.level}`}>
-          <span className="safety-banner-icon">🛡️</span>
+          <span className="safety-banner-icon"><PngIcon name="safety-shield" size={32} /></span>
           <span className="safety-banner-text">{state.safetyNotice.message}</span>
           <button className="safety-banner-close" onClick={() => dispatch({ type: 'DISMISS_SAFETY_NOTICE' })}>✕</button>
         </div>
@@ -192,7 +182,7 @@ export default function StoryPlayPage() {
       <div className="story-chat-area">
         {showStartHint && (
           <div className="story-start-hint">
-            <span className="story-start-emoji">🎬</span>
+            <span className="story-start-emoji"><PngIcon name="story-director" size={88} /></span>
             <h2>故事导演正在准备...</h2>
             <p>马上为你呈现精彩的故事开场！</p>
           </div>
@@ -205,7 +195,6 @@ export default function StoryPlayPage() {
             content={msg.content}
             isStreaming={msg.isStreaming}
             isQuestion={msg.isQuestion}
-            imageUrl={msg.imageUrl}
             isEnding={msg.isEnding}
             showPinyin={showPinyin}
             fontSize={fontSize}
@@ -221,15 +210,15 @@ export default function StoryPlayPage() {
       <div className="story-play-bottom">
         {state.isEnding ? (
           <div className="story-ended-card">
-            <span className="story-ended-emoji">🎉</span>
+            <span className="story-ended-emoji"><PngIcon name="celebration" size={96} /></span>
             <h3>故事创作完成！</h3>
             <p>太棒了！你们一起创造了一个精彩的故事~</p>
             <div className="story-ended-actions">
               <Button variant="primary" onClick={() => id && navigate(`/story-create/talent/${id}`)}>
-                🧠 查看天赋画像
+                <PngIcon name="celebration" size={28} /> 查看创作回顾
               </Button>
               <Button variant="secondary" onClick={() => navigate(`/story-create/gallery`)}>
-                📚 故事画廊
+                <PngIcon name="story-book" size={28} /> 我的故事书架
               </Button>
             </div>
           </div>
@@ -245,25 +234,25 @@ export default function StoryPlayPage() {
         {state.turnNumber >= 3 && !state.isEnding && !state.isStreaming && (
           <div className="story-end-action">
             <button className="end-story-btn" onClick={() => setShowEndModal(true)}>
-              🏁 给故事写一个结尾
+              <PngIcon name="action-write" size={26} /> 给故事写一个结尾
             </button>
           </div>
         )}
 
         {/* Ending choice modal */}
-        {showEndModal && (
+        {showEndModal && createPortal((
           <div className="end-modal-overlay" onClick={() => setShowEndModal(false)}>
             <div className="end-modal animate-pop-in" onClick={e => e.stopPropagation()}>
-              <h3>🎬 故事结局</h3>
+              <h3><PngIcon name="story-director" size={32} /> 故事结局</h3>
               <div className="end-options">
                 <button className="end-option-btn" onClick={handleAIEnding}>
-                  <span className="end-option-icon">🤖</span>
+                  <span className="end-option-icon"><PngIcon name="avatar-robot" size={48} /></span>
                   <span className="end-option-title">让故事导演写结局</span>
                   <span className="end-option-desc">AI根据剧情发展，给出一个温暖的结尾</span>
                 </button>
                 <div className="end-option-divider"><span>或者</span></div>
                 <div className="end-option-child">
-                  <span className="end-option-icon">✏️</span>
+                  <span className="end-option-icon"><PngIcon name="action-write" size={48} /></span>
                   <span className="end-option-title">我来写结局</span>
                   <textarea
                     className="end-child-input"
@@ -277,14 +266,14 @@ export default function StoryPlayPage() {
                     disabled={!childEnding.trim()}
                     onClick={handleChildEnding}
                   >
-                    ✨ 提交我的结局
+                    <PngIcon name="celebration" size={26} /> 提交我的结局
                   </button>
                 </div>
               </div>
               <button className="end-modal-close" onClick={() => setShowEndModal(false)}>关闭</button>
             </div>
           </div>
-        )}
+        ), document.body)}
       </div>
     </div>
 

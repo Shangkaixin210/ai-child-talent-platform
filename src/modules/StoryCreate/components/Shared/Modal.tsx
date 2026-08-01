@@ -1,5 +1,11 @@
-import type { ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react';
 import './Modal.css';
+
+const ModalHeaderActionsContext = createContext<Dispatch<SetStateAction<ReactNode>> | null>(null);
+
+export function useModalHeaderActions() {
+  return useContext(ModalHeaderActionsContext);
+}
 
 interface ModalProps {
   open: boolean;
@@ -9,6 +15,12 @@ interface ModalProps {
 }
 
 export default function Modal({ open, onClose, title, children }: ModalProps) {
+  const [headerActions, setHeaderActions] = useState<ReactNode>(null);
+
+  useEffect(() => {
+    if (!open) setHeaderActions(null);
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -17,12 +29,15 @@ export default function Modal({ open, onClose, title, children }: ModalProps) {
         {title && (
           <div className="modal-header">
             <h2>{title}</h2>
+            {headerActions && <div className="modal-header-actions">{headerActions}</div>}
             <button className="modal-close" onClick={onClose}>
               ✕
             </button>
           </div>
         )}
-        <div className="modal-body">{children}</div>
+        <ModalHeaderActionsContext.Provider value={setHeaderActions}>
+          <div className="modal-body">{children}</div>
+        </ModalHeaderActionsContext.Provider>
       </div>
     </div>
   );

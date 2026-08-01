@@ -8,7 +8,6 @@ export interface ChatMessage {
   content: string;
   isStreaming?: boolean;
   isQuestion?: boolean;
-  imageUrl?: string;
   isEnding?: boolean;
 }
 
@@ -34,9 +33,8 @@ type TurnAction =
   | { type: 'ADD_CHILD_MESSAGE'; content: string }
   | { type: 'START_AI_STREAMING' }
   | { type: 'ADD_FAIRY_PRAISE'; content: string }
-  | { type: 'APPEND_NARRATIVE_CHUNK'; text: string; imageUrl?: string }
-  | { type: 'SET_AI_IMAGE'; imageUrl: string }
-  | { type: 'APPEND_ENDING'; text: string; imageUrl?: string }
+  | { type: 'APPEND_NARRATIVE_CHUNK'; text: string }
+  | { type: 'APPEND_ENDING'; text: string }
   | { type: 'SET_AI_QUESTION'; text: string }
   | { type: 'FINISH_TURN'; turnNumber: number; isEnding: boolean }
   | { type: 'FAIL_TURN'; message: string }
@@ -63,17 +61,10 @@ function turnReducer(state: TurnState, action: TurnAction): TurnState {
       };
 
     case 'ADD_CHILD_MESSAGE': {
-      // Generate illustration for child's story contribution
-      let childImageUrl = '';
-      if (action.content && action.content.length > 10) {
-        const prompt = encodeURIComponent(action.content.slice(0, 200));
-        childImageUrl = `https://image.pollinations.ai/prompt/${prompt}?width=512&height=512&nologo=true`;
-      }
       const childMsg: ChatMessage = {
         id: `child-${Date.now()}`,
         role: 'child',
         content: action.content,
-        imageUrl: childImageUrl || undefined,
       };
       return { ...state, messages: [...state.messages, childMsg] };
     }
@@ -99,8 +90,6 @@ function turnReducer(state: TurnState, action: TurnAction): TurnState {
         msgs[msgs.length - 1] = {
           ...last,
           content: last.content + (action.text || ''),
-          // Keep the first image_url if multiple chunks have them
-          imageUrl: last.imageUrl || action.imageUrl,
         };
       }
       return { ...state, messages: msgs };
@@ -123,20 +112,8 @@ function turnReducer(state: TurnState, action: TurnAction): TurnState {
         role: 'ai',
         content: action.text || '',
         isEnding: true,
-        imageUrl: action.imageUrl,
       };
       return { ...state, messages: [...msgs, endMsg], isStreaming: false };
-    }
-
-    case 'SET_AI_IMAGE': {
-      const messages = [...state.messages];
-      for (let index = messages.length - 1; index >= 0; index -= 1) {
-        if (messages[index].role === 'ai') {
-          messages[index] = { ...messages[index], imageUrl: action.imageUrl };
-          break;
-        }
-      }
-      return { ...state, messages };
     }
 
     case 'SET_AI_QUESTION': {
@@ -191,7 +168,6 @@ function turnReducer(state: TurnState, action: TurnAction): TurnState {
           messages[index] = {
             ...messages[index],
             content: action.content,
-            imageUrl: undefined,
           };
           break;
         }

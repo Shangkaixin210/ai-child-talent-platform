@@ -1,10 +1,14 @@
 import unittest
 
-from app.services.content_guard import guard_child_input
+from app.services.content_guard import guard_child_input, sanitize_agent_output
 from app.services.llm_service import apply_empathy_keyword_fallback
 
 
 class ContentGuardRegressionTests(unittest.TestCase):
+    def test_fictional_details_in_agent_story_are_not_privacy_redacted(self):
+        story_text = "小鹿叫露露，住在彩虹森林的月亮街12号。"
+        self.assertEqual(sanitize_agent_output(story_text), story_text)
+
     def test_normal_school_story_context_is_not_privacy(self):
         for text in ("班级图书角", "整理图书角", "学校里的故事"):
             with self.subTest(text=text):

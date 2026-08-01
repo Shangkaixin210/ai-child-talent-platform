@@ -1,4 +1,5 @@
 import './StoryProgress.css';
+import PngIcon from '../Shared/PngIcon';
 
 interface StoryProgressProps {
   turn: number;
@@ -18,7 +19,7 @@ export default function StoryProgress({ turn, maxTurns, isEnding }: StoryProgres
         />
       </div>
       <span className="progress-label">
-        {isEnding ? '🎉 故事即将结尾！' : `第 ${turn} / ${maxTurns} 回合`}
+        {isEnding ? <><PngIcon name="celebration" size={24} /> 故事即将结尾！</> : `第 ${turn} / ${maxTurns} 回合`}
       </span>
     </div>
   );

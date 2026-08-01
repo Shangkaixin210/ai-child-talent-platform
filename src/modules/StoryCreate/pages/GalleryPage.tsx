@@ -12,18 +12,18 @@ import StoryReader from "../components/Gallery/StoryReader";
 import Modal from "../components/Shared/Modal";
 import Button from "../components/Shared/Button";
 import Loading from "../components/Shared/Loading";
+import PngIcon from "../components/Shared/PngIcon";
 import "./GalleryPage.css";
 
-export default function GalleryPage() {
+export default function GalleryPage({ parentMode = false }: { parentMode?: boolean }) {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [readingStory, setReadingStory] = useState<Story | null>(null);
-  const [parentMode, setParentMode] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     loadStories();
-  }, []);
+  }, [parentMode]);
 
   async function loadStories() {
     try {
@@ -35,21 +35,6 @@ export default function GalleryPage() {
       // silently handle
     } finally {
       setLoading(false);
-    }
-  }
-
-  function toggleParentMode() {
-    if (parentMode) {
-      setParentMode(false);
-      loadStories();
-    } else {
-      const pin = prompt("请输入家长密码：");
-      if (pin === "0000") {
-        setParentMode(true);
-        loadStories();
-      } else if (pin !== null) {
-        alert("密码不正确");
-      }
     }
   }
 
@@ -78,41 +63,37 @@ export default function GalleryPage() {
 
   if (loading) return <Loading text="加载故事画廊..." />;
 
-  const activeStories = stories.filter((s) => s.status === "active");
+  const activeStories = parentMode ? [] : stories.filter((s) => s.status === "active");
   const completedStories = stories.filter((s) => s.status === "completed");
+  const hasVisibleStories = parentMode ? completedStories.length > 0 : stories.length > 0;
 
   return (
     <div className="gallery-page page">
       <div className="gallery-header">
-        <h1>{parentMode ? "家长查看 · 全部数据" : " 我的故事画廊"}</h1>
-        <div style={{ display: "flex", gap: 8 }}>
-          <Button
-            variant={parentMode ? "secondary" : "ghost"}
-            size="sm"
-            onClick={toggleParentMode}
-          >
-            {parentMode ? "退出家长模式" : "家长查看"}
-          </Button>
-          {!parentMode && (
+        <h1>{parentMode ? "家长故事书架" : "我的故事画廊"}</h1>
+        {!parentMode && (
+          <div style={{ display: "flex", gap: 8 }}>
             <Button variant="primary" onClick={() => navigate("/story-create/characters")}>
-              ✨ 创作新故事
+              <PngIcon name="celebration" size={26} /> 创作新故事
             </Button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {stories.length === 0 ? (
+      {!hasVisibleStories ? (
         <div className="gallery-empty">
-          <span className="gallery-empty-emoji">📖</span>
-          <h2>还没有故事</h2>
-          <p>去创作你的第一个故事吧！</p>
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={() => navigate("/story-create/characters")}
-          >
-            🚀 开始创作
-          </Button>
+          <PngIcon name="story-book" size={150} />
+          <h2>{parentMode ? '还没有已完成的故事' : '还没有故事'}</h2>
+          <p>{parentMode ? '孩子完成故事后，会显示在这里。' : '去创作你的第一个故事吧！'}</p>
+          {!parentMode && (
+            <Button
+              variant="primary"
+              size="lg"
+              onClick={() => navigate("/story-create/characters")}
+            >
+              <PngIcon name="theme-space" size={26} /> 开始创作
+            </Button>
+          )}
         </div>
       ) : (
         <>
@@ -134,7 +115,7 @@ export default function GalleryPage() {
                         className="gallery-action-btn delete"
                         onClick={(e) => handleDelete(story, e)}
                       >
-                        🗑️
+                        <PngIcon name="action-delete" size={22} />
                       </button>
                     </div>
                   </div>
@@ -158,25 +139,27 @@ export default function GalleryPage() {
                         className="gallery-action-btn read"
                         onClick={() => setReadingStory(story)}
                       >
-                        📖 阅读
+                        <PngIcon name="story-book" size={22} /> 阅读
                       </button>
-                      <button
-                        className="gallery-action-btn rename"
-                        onClick={() => handleRename(story)}
-                      >
-                        ✏️ 改名
-                      </button>
+                      {!parentMode && (
+                        <button
+                          className="gallery-action-btn rename"
+                          onClick={() => handleRename(story)}
+                        >
+                          <PngIcon name="action-write" size={22} /> 改名
+                        </button>
+                      )}
                       <button
                         className="gallery-action-btn talent"
-                        onClick={() => navigate(`/story-create/talent/${story.id}`)}
+                        onClick={() => navigate(parentMode ? `/story-create/parent/talent/${story.id}` : `/story-create/talent/${story.id}`)}
                       >
-                        🧠 天赋画像
+                        <PngIcon name="talent-brain" size={22} /> {parentMode ? '查看详细分析' : '创作回顾'}
                       </button>
                       <button
                         className="gallery-action-btn delete"
                         onClick={(e) => handleDelete(story, e)}
                       >
-                        🗑️
+                        <PngIcon name="action-delete" size={22} />
                       </button>
                     </div>
                   </div>

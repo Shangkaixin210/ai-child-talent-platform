@@ -1,20 +1,22 @@
-/* Tablet: preserve the desktop composition while giving content more room. */
+/* ═══════════════════════════════════════════
+   Responsive — Tablet & Phone overrides
+   ═══════════════════════════════════════════ */
+
+/* Tablet: preserve desktop composition, give more room */
 @media (max-width: 900px) {
   .page {
     max-width: 760px;
     padding: 20px;
   }
-
   .app-header {
     padding-inline: 18px;
   }
-
   .home-page {
     padding-inline: 20px;
   }
 }
 
-/* Phone typography and spacing. Desktop rules remain untouched. */
+/* Phone typography and spacing */
 @media (max-width: 600px) {
   :root {
     --font-size-xs: 0.8125rem;
@@ -102,23 +104,22 @@
   .story-play-top { padding: 7px 10px; }
   .story-title-inline { font-size: 1rem; }
   .story-chat-area { padding: 16px 10px; }
-  .chat-bubble {
+  .chat-msg {
     max-width: 96%;
     gap: 7px;
   }
-  .chat-bubble-avatar,
+  .chat-avatar,
   .typing-avatar {
     width: 32px;
     height: 32px;
     font-size: 17px;
   }
-  .chat-bubble-content {
+  .chat-body {
     padding: 12px 14px;
     line-height: 1.75;
   }
-  .chat-bubble-text { line-height: 1.75; }
-  .chat-bubble-text:has(ruby) { line-height: 2.65; }
-  .chat-bubble-image { max-width: 100%; }
+  .chat-text { line-height: 1.75; }
+  .chat-text:has(ruby) { line-height: 2.65; }
   .story-input-wrapper { padding: 10px 10px 12px; }
   .story-input-row { gap: 7px; }
   .voice-btn { width: 44px; height: 44px; }
@@ -181,6 +182,7 @@
   .music-controls { max-width: calc(100vw - 24px); }
 }
 
+/* Extra small */
 @media (max-width: 380px) {
   :root {
     --font-size-body: 1rem;
@@ -190,18 +192,8 @@
   .logo-text { max-width: 92px; font-size: 0.9rem; }
   .header-channel { font-size: 0.72rem; padding-inline: 7px; }
   .header-logout { font-size: 0.72rem; padding-inline: 7px; }
-  .chat-bubble-avatar,
+  .chat-avatar,
   .typing-avatar { display: none; }
-  .chat-bubble { max-width: 100%; }
+  .chat-msg { max-width: 100%; }
   .theme-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-  }
 }

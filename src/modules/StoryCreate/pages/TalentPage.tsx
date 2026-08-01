@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { apiFetch, ApiError } from '../api/client';
 import StoryReader from '../components/Gallery/StoryReader';
@@ -6,6 +6,7 @@ import Button from '../components/Shared/Button';
 import Loading from '../components/Shared/Loading';
 import Modal from '../components/Shared/Modal';
 import PinyinText from '../components/Story/PinyinText';
+import PngIcon from '../components/Shared/PngIcon';
 import './TalentPage.css';
 
 interface DimensionEvidence {
@@ -62,14 +63,14 @@ interface TalentProfile {
   };
 }
 
-function ScoreCard({ title, emoji, section, language, onClick }: {
-  title: string; emoji: string; section: ReportSection; language?: boolean; onClick: () => void;
+function ScoreCard({ title, icon, section, language, onClick }: {
+  title: string; icon: ReactNode; section: ReportSection; language?: boolean; onClick: () => void;
 }) {
   const total = language ? section.final_score ?? 0 : section.score ?? 0;
   const invalid = section.is_valid === false;
   return (
     <button className={`talent-card-btn talent-card-${section.level} ${invalid ? 'talent-card-invalid' : ''}`} onClick={onClick}>
-      <span className="talent-card-emoji">{emoji}</span>
+      <span className="talent-card-emoji">{icon}</span>
       <span className="talent-card-title">{title}</span>
       <span className="talent-card-score">
         <strong>{invalid ? '—' : total}</strong><small>{language ? '/115' : '/100'}</small>
@@ -166,7 +167,7 @@ function DetailPanel({ title, section, language, onClose }: {
   );
 }
 
-export default function TalentPage() {
+export default function TalentPage({ parentView = false }: { parentView?: boolean }) {
   const { storyId } = useParams<{ storyId: string }>();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<TalentProfile | null>(null);
@@ -178,42 +179,49 @@ export default function TalentPage() {
 
   useEffect(() => {
     if (!storyId) return;
-    apiFetch<TalentProfile>(`/talents/${storyId}?report_version=quality-gates-v1`, {
+    const endpoint = parentView
+      ? `/talents/${storyId}?report_version=quality-gates-v1`
+      : `/talents/${storyId}/feedback`;
+    apiFetch<TalentProfile>(endpoint, {
       cache: 'no-store',
     })
       .then(setProfile)
       .catch((err) => setError(err instanceof ApiError ? err.message : '报告加载失败'))
       .finally(() => setLoading(false));
-  }, [storyId]);
+  }, [storyId, parentView]);
 
-  if (loading) return <Loading text="正在生成天赋报告..." />;
+  if (loading) return <Loading text={parentView ? '正在生成家长报告...' : '正在整理你的创作回顾...'} />;
   if (error) return <div className="page talent-error">{error}</div>;
   if (!profile) return <div className="page talent-error">暂时没有可用的天赋数据</div>;
 
   return (
     <div className="page talent-page">
-      <Button variant="ghost" size="sm" onClick={() => navigate('/story-create/gallery')} style={{ alignSelf: 'flex-start' }}>
-        返回故事画廊
+      <Button variant="ghost" size="sm" onClick={() => navigate(parentView ? '/story-create/parent' : '/story-create/gallery')} style={{ alignSelf: 'flex-start' }}>
+        {parentView ? '返回家长故事书架' : '返回我的故事书架'}
       </Button>
 
       <header className="talent-hero">
         <h1>{profile.story_title}</h1>
-        <div className="talent-meta">
-          <span>{profile.age_group} 岁通道</span>
-          <span>{profile.total_turns} 次有效表达</span>
-          <span>{profile.total_words} 字</span>
-        </div>
+        {parentView ? (
+          <div className="talent-meta">
+            <span>{profile.age_group} 岁通道</span>
+            <span>{profile.total_turns} 次有效表达</span>
+            <span>{profile.total_words} 字</span>
+          </div>
+        ) : <p className="talent-child-intro">太棒了！这是属于你的故事创作回顾。</p>}
       </header>
 
-      <div className="talent-cards">
-        <ScoreCard title="语言智能" emoji="📝" section={profile.language} language onClick={() => setDetail({ title: '语言智能', section: profile.language, language: true })} />
-        <ScoreCard title="共情力（人际智能）" emoji="💛" section={profile.empathy} onClick={() => setDetail({ title: '共情力（人际智能）', section: profile.empathy })} />
-        <ScoreCard title="想象力（空间智能）" emoji="✨" section={profile.imagination} onClick={() => setDetail({ title: '想象力（空间智能）', section: profile.imagination })} />
-      </div>
+      {parentView && (
+        <div className="talent-cards">
+          <ScoreCard title="语言智能" icon={<PngIcon name="story-book" size={70} />} section={profile.language} language onClick={() => setDetail({ title: '语言智能', section: profile.language, language: true })} />
+          <ScoreCard title="共情力（人际智能）" icon={<PngIcon name="safety-shield" size={70} />} section={profile.empathy} onClick={() => setDetail({ title: '共情力（人际智能）', section: profile.empathy })} />
+          <ScoreCard title="想象力（空间智能）" icon={<PngIcon name="talent-brain" size={70} />} section={profile.imagination} onClick={() => setDetail({ title: '想象力（空间智能）', section: profile.imagination })} />
+        </div>
+      )}
 
-      {profile.highlights.length > 0 && (
+      {!parentView && profile.highlights.length > 0 && (
         <section className="talent-card talent-kids-card talent-moments-card">
-          <h2>我的精彩瞬间</h2>
+          <h2>精彩瞬间</h2>
           <div className="talent-quotes">
             {profile.highlights.map((quote, index) => (
               <blockquote key={index}>“<PinyinText text={quote} enabled />”</blockquote>
@@ -222,7 +230,7 @@ export default function TalentPage() {
         </section>
       )}
 
-      <section className="talent-kids-feedback">
+      {!parentView && <section className="talent-kids-feedback">
         {profile.strengths.length > 0 ? (
           <>
             <div className="talent-kids-tabs" role="tablist" aria-label="选择查看的儿童反馈">
@@ -233,7 +241,7 @@ export default function TalentPage() {
                 className={kidsPanel === 'strengths' ? 'active' : ''}
                 onClick={() => setKidsPanel('strengths')}
               >
-                我的闪光点
+                我的亮点
               </button>
               <button
                 type="button"
@@ -248,7 +256,7 @@ export default function TalentPage() {
 
             {kidsPanel === 'strengths' ? (
               <section className="talent-card talent-kids-card talent-strength-card" role="tabpanel">
-                <h2>我的闪光点</h2>
+                <h2>我的亮点</h2>
                 <ul>{profile.strengths.map((item, index) => (
                   <li key={index}><PinyinText text={item} enabled /></li>
                 ))}</ul>
@@ -270,18 +278,20 @@ export default function TalentPage() {
             ))}</ul>
           </section>
         )}
-      </section>
+      </section>}
 
       <div className="talent-actions">
         <Button variant="secondary" onClick={() => setShowStory(true)}>阅读完整故事</Button>
-        <Button variant="primary" onClick={() => navigate('/story-create/characters')}>继续创作</Button>
+        {!parentView && (
+          <Button variant="primary" onClick={() => navigate('/story-create/characters')}>继续创作</Button>
+        )}
       </div>
 
       <Modal open={showStory} onClose={() => setShowStory(false)} title={profile.story_title}>
         <StoryReader storyId={profile.story_id} />
       </Modal>
 
-      <Modal open={!!detail} onClose={() => setDetail(null)} title="">
+      <Modal open={parentView && !!detail} onClose={() => setDetail(null)} title="">
         {detail && <DetailPanel title={detail.title} section={detail.section} language={detail.language} onClose={() => setDetail(null)} />}
       </Modal>
     </div>

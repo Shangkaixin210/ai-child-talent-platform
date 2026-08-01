@@ -1,5 +1,6 @@
 import { useState, useRef, type FormEvent, type KeyboardEvent } from 'react';
 import { useSpeechInput } from '../../hooks/useSpeechInput';
+import PngIcon from '../Shared/PngIcon';
 import './StoryInput.css';
 
 interface StoryInputProps {
@@ -83,7 +84,7 @@ export default function StoryInput({
           disabled={disabled}
           title={listening ? '点击停止' : '语音输入'}
         >
-          {listening ? '⏺' : '🎤'}
+          {listening ? <span aria-label="正在录音">⏺</span> : <PngIcon name="action-microphone" size={30} />}
         </button>
         <textarea
           ref={inputRef}
@@ -92,7 +93,7 @@ export default function StoryInput({
           onChange={(e) => { setText(e.target.value); setVoiceError(''); }}
           onKeyDown={handleKeyDown}
           onInput={handleInput}
-          placeholder={listening ? (interim || '正在聆听...请说话 🎤') : placeholder}
+          placeholder={listening ? (interim || '正在聆听...请说话') : placeholder}
           disabled={disabled || listening}
           rows={1}
         />
@@ -103,10 +104,10 @@ export default function StoryInput({
           onClick={handleSubmit}
           title="发送"
         >
-          🚀
+          <PngIcon name="theme-space" size={30} />
         </button>
       </div>
-      <p className="story-input-hint">按 Enter 发送，Shift+Enter 换行 · 🎤 语音输入</p>
+      <p className="story-input-hint">按 Enter 发送，Shift+Enter 换行 · 支持语音输入</p>
     </div>
   );
 }

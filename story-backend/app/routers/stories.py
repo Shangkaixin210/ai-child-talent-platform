@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import re
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -316,7 +317,6 @@ async def story_turn(
         observation_data = None
         praise_text = ""
         ai_ending = False
-        image_urls: list[str] = []  # Collect for storage
 
         if clean_result and clean_result.removed_count > 0:
             yield f"event: input_redacted\ndata: {json.dumps({'text': safe_child_input}, ensure_ascii=False)}\n\n"
@@ -356,43 +356,39 @@ async def story_turn(
 
             async for chunk in llm.generate_turn(
                 messages,
-                character_name=sanitize_agent_output(char.nickname) if char else "",
+                character_name=redact_privacy(char.nickname)[0] if char else "",
                 character_type=char.avatar_type if char else "",
-                personality=sanitize_agent_output(char.personality or "") if char else "",
-                theme=sanitize_agent_output(story.theme or ""),
+                personality=redact_privacy(char.personality or "")[0] if char else "",
+                theme=redact_privacy(story.theme or "")[0],
                 is_first_turn=is_first_turn,
                 age_group=current_user.age_group or "8-12",
             ):
                 if chunk["type"] == "narrative_chunk":
                     safe_text = sanitize_agent_output(chunk["text"])
                     narrative_parts.append(safe_text)
-                    data = {"text": safe_text}
-                    # If LLM provided an image_prompt, use it; otherwise generate from text
-                    img_prompt = sanitize_agent_output(chunk.get("image_prompt", ""))
-                    if not img_prompt and len(safe_text) > 20:
-                        from app.services.image_service import generate_image_prompt_from_narrative, generate_image_url
-                        img_prompt = generate_image_prompt_from_narrative(safe_text)
-                    if img_prompt:
-                        from app.services.image_service import generate_image_url
-                        img_url = generate_image_url(img_prompt)
-                        data["image_url"] = img_url
-                        image_urls.append(img_url)
-                    yield f"event: narrative_chunk\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+                    yield f"event: narrative_chunk\ndata: {json.dumps({'text': safe_text}, ensure_ascii=False)}\n\n"
 
                 elif chunk["type"] == "ending":
                     ai_ending = True
                     safe_text = sanitize_agent_output(chunk["text"])
                     narrative_parts.append(safe_text)
-                    data = {"text": safe_text}
-                    from app.services.image_service import generate_image_prompt_from_narrative, generate_image_url
-                    img_prompt = generate_image_prompt_from_narrative(safe_text)
-                    ending_image_url = generate_image_url(img_prompt)
-                    data["image_url"] = ending_image_url
-                    image_urls.append(ending_image_url)
-                    yield f"event: ending\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+                    yield f"event: ending\ndata: {json.dumps({'text': safe_text}, ensure_ascii=False)}\n\n"
 
                 elif chunk["type"] == "question":
                     question_text = sanitize_agent_output(chunk["text"])
+                    # Streaming/LLM output occasionally puts the closing quote from
+                    # the preceding dialogue at the beginning of the question. Move
+                    # only those leading closing marks back into the narrative bubble.
+                    leading_closers = re.match(r'^[\s]*([”’」』]+)', question_text)
+                    if leading_closers:
+                        closing_text = leading_closers.group(1)
+                        narrative_parts.append(closing_text)
+                        question_text = question_text[leading_closers.end():].lstrip()
+                        yield f"event: narrative_chunk\ndata: {json.dumps({'text': closing_text}, ensure_ascii=False)}\n\n"
+                    # Avoid duplicated terminal question marks such as `？”？`.
+                    question_text = re.sub(
+                        r'([？?])([”’」』]?)\s*[？?]+$', r'\1\2', question_text
+                    )
                     yield f"event: question\ndata: {json.dumps({'text': question_text}, ensure_ascii=False)}\n\n"
 
                 elif chunk["type"] == "observation":
@@ -405,16 +401,6 @@ async def story_turn(
                 elif chunk["type"] == "done":
                     narrative = "".join(narrative_parts)
 
-                    # Always keep at least one illustration for a non-empty AI turn.
-                    # The URL is emitted to the live view and persisted for refresh/gallery.
-                    if narrative and not image_urls:
-                        from app.services.image_service import generate_image_prompt_from_narrative, generate_image_url
-                        fallback_prompt = generate_image_prompt_from_narrative(narrative)
-                        fallback_image_url = generate_image_url(fallback_prompt)
-                        if fallback_image_url:
-                            image_urls.append(fallback_image_url)
-                            yield f"event: illustration\ndata: {json.dumps({'image_url': fallback_image_url}, ensure_ascii=False)}\n\n"
-
                     # 4. Save AI message
                     ai_msg = await story_service.save_ai_message(
                         db, story_id, turn_number, narrative, question_text,
@@ -423,7 +409,6 @@ async def story_turn(
                             "question": question_text,
                             "observation": observation_data,
                             "praise": praise_text,
-                            "image_urls": image_urls,
                         }, ensure_ascii=False),
                     )
 
