@@ -1,0 +1,32 @@
+[
+  {
+    "platformUid": "S2024001",
+    "username": "小明",
+    "passwordHash": "$2b$10$ZtH7DecqUompwhEMbFfJCOmmHUnijQ.XvbU0aHwkT7WfLCRleO0Qi"
+  },
+  {
+    "platformUid": "S2024002",
+    "username": "С��",
+    "passwordHash": "$2b$10$b5bHiZn0zVijS2yttz4yG.yWH55PBVzj89wpqSOi0MK./.nWxorjm"
+  },
+  {
+    "platformUid": "S2024003",
+    "username": "小琪",
+    "passwordHash": "$2b$10$dX5eFRJHQsHljCEBJyu.XOFZolNFKPk34AOf1wD7crGsxEXlg8hp."
+  },
+  {
+    "platformUid": "S2024004",
+    "username": "米亚",
+    "passwordHash": "$2b$10$nIJLs56pO6D4ma3R98AyOerCmWet7FQX2CJrYpxLz5Vjq5GH5Q1AG"
+  },
+  {
+    "platformUid": "S2024005",
+    "username": "小辉",
+    "passwordHash": "$2b$10$B/1sPtQowWjgQYRgAnBfNuYNPK.hwBJS6fJakP4PlEKaumedCVLUW"
+  },
+  {
+    "platformUid": "S2024006",
+    "username": "小美",
+    "passwordHash": "$2b$10$mKDXAmbAdzvwGPEvZzaB9O9HEVPFFAp.FApMjXHFaHkzgkRXGylDK"
+  }
+]
