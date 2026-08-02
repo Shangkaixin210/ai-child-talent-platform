@@ -4,6 +4,8 @@ import CampusDesign from './pages/CampusDesign'
 import CareerSim from './pages/CareerSim'
 import ChatObserve from './pages/ChatObserve'
 import Login from './pages/Login'
+import PlatformLogin from './pages/PlatformLogin'
+import PlatformRegister from './pages/PlatformRegister'
 import Report from './pages/Report'
 import StoryCreate from './pages/StoryCreate'
 
@@ -13,6 +15,8 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/platform-login" element={<PlatformLogin />} />
+        <Route path="/platform-register" element={<PlatformRegister />} />
         <Route path="/chat-observe" element={<ChatObserve />} />
         <Route path="/story-create/*" element={<StoryCreate />} />
         <Route path="/campus-design" element={<CampusDesign />} />
