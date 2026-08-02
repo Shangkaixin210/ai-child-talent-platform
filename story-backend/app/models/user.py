@@ -12,6 +12,9 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    platform_uid: Mapped[Optional[str]] = mapped_column(
+        String(50), unique=True, nullable=True, index=True
+    )
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     display_name: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     has_seen_onboarding: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, server_default="0")

@@ -23,7 +23,10 @@ export default function Header() {
               <span aria-hidden="true">←</span> 返回主页
             </button>
           )}
-          <button className="header-logout" onClick={() => { logout(); navigate('/story-create/login'); }}>退出</button>
+          <button className="header-logout" onClick={async () => {
+            await logout();
+            window.location.assign('/platform-login');
+          }}>退出</button>
         </div>
       )}
     </header>

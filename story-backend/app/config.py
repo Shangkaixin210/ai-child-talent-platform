@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
 
+    # SSO token verification. This is deliberately separate from jwt_secret_key:
+    # the platform token proves identity, then this service issues its own token.
+    platform_sso_secret: str = ""
+    platform_sso_algorithm: str = "HS256"
+
     # Story config
     max_turns: int = 15  # Soft safety cap; AI decides ending dynamically
 

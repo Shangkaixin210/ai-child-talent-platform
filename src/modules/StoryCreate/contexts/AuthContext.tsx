@@ -1,12 +1,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { getMe, type User } from '../api/endpoints';
+import { getMe, ssoLogin, type User } from '../api/endpoints';
 import { ApiError } from '../api/client';
 
 interface AuthState {
   user: User | null;
   loading: boolean;
   login: (token: string, user: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   setUser: (user: User) => void;
 }
 
@@ -14,7 +14,7 @@ const AuthContext = createContext<AuthState>({
   user: null,
   loading: true,
   login: () => {},
-  logout: () => {},
+  logout: async () => {},
   setUser: () => {},
 });
 
@@ -23,19 +23,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    getMe()
-      .then((u) => setUser(u))
-      .catch((err) => {
-        if (err instanceof ApiError && err.status === 401) {
+    let active = true;
+
+    async function restoreSession() {
+      const url = new URL(window.location.href);
+      const platformToken = url.searchParams.get('sso_token');
+
+      try {
+        if (platformToken) {
+          const result = await ssoLogin(platformToken);
+          if (!active) return;
+          localStorage.setItem('auth_token', result.token);
+          setUser(result.user);
+          if (result.show_onboarding) {
+            sessionStorage.setItem('ai_bole_show_onboarding', 'true');
+          } else {
+            sessionStorage.removeItem('ai_bole_show_onboarding');
+          }
+          // The short-lived platform token has served its purpose. Remove it
+          // from the address bar/history and use the story token from now on.
+          url.searchParams.delete('sso_token');
+          window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+          return;
+        }
+
+        if (!localStorage.getItem('auth_token')) return;
+        const restoredUser = await getMe();
+        if (active) setUser(restoredUser);
+      } catch (err) {
+        if (err instanceof ApiError && (err.status === 401 || err.status === 400)) {
           localStorage.removeItem('auth_token');
         }
-      })
-      .finally(() => setLoading(false));
+        if (active) setUser(null);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    restoreSession();
+    return () => { active = false; };
   }, []);
 
   function login(token: string, user: User) {
@@ -43,9 +69,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(user);
   }
 
-  function logout() {
+  async function logout() {
     localStorage.removeItem('auth_token');
+    sessionStorage.removeItem('ai_bole_show_onboarding');
     setUser(null);
+    try {
+      await fetch('/api/platform/logout', { method: 'POST' });
+    } catch {
+      // Local story state is already cleared. The platform login page can
+      // recover even when its logout service is temporarily unavailable.
+    }
   }
 
   return (

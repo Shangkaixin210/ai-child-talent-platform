@@ -9,7 +9,6 @@ import ChannelPage from './pages/ChannelPage'
 import CharacterPage from './pages/CharacterPage'
 import GalleryPage from './pages/GalleryPage'
 import HomePage from './pages/HomePage'
-import LoginPage from './pages/LoginPage'
 import StoryPlayPage from './pages/StoryPlayPage'
 import TalentPage from './pages/TalentPage'
 
@@ -18,14 +17,14 @@ const STORY_ROOT = '/story-create'
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   if (loading) return <Loading text="加载中..." />
-  if (!user) return <Navigate to={`${STORY_ROOT}/login`} replace />
+  if (!user) return <Navigate to="/platform-login" replace />
   return <>{children}</>
 }
 
 function ChannelGuard({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
   if (loading) return <Loading text="加载中..." />
-  if (!user) return <Navigate to={`${STORY_ROOT}/login`} replace />
+  if (!user) return <Navigate to="/platform-login" replace />
   const isWaitingForOnboarding = sessionStorage.getItem('ai_bole_show_onboarding') === 'true'
   if (!user.age_group && isWaitingForOnboarding) return <>{children}</>
   if (!user.age_group) return <Navigate to={`${STORY_ROOT}/channel`} replace />
@@ -33,16 +32,13 @@ function ChannelGuard({ children }: { children: React.ReactNode }) {
 }
 
 function StoryRoutes() {
-  const { user, loading } = useAuth()
+  const { loading } = useAuth()
 
   if (loading) return <Loading text="正在启动故事世界..." />
 
   return (
     <Routes>
-      <Route
-        path="login"
-        element={user ? <Navigate to={STORY_ROOT} replace /> : <LoginPage />}
-      />
+      <Route path="login" element={<Navigate to="/platform-login" replace />} />
       <Route
         path="channel"
         element={

@@ -16,6 +16,10 @@ class UserLogin(BaseModel):
     password: str
 
 
+class SSOLoginRequest(BaseModel):
+    sso_token: str
+
+
 class UserOut(BaseModel):
     id: int
     username: str

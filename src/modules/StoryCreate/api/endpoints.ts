@@ -92,6 +92,13 @@ export function login(username: string, password: string) {
   });
 }
 
+export function ssoLogin(ssoToken: string) {
+  return apiFetch<AuthResponse>('/auth/sso-login', {
+    method: 'POST',
+    body: JSON.stringify({ sso_token: ssoToken }),
+  });
+}
+
 export function getMe() {
   return apiFetch<User>('/auth/me');
 }

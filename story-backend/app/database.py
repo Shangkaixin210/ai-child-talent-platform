@@ -27,6 +27,8 @@ async def init_db():
         migrations = [
             "ALTER TABLE users ADD COLUMN age_group VARCHAR(10)",
             "ALTER TABLE users ADD COLUMN has_seen_onboarding BOOLEAN DEFAULT 0",
+            "ALTER TABLE users ADD COLUMN platform_uid VARCHAR(50)",
+            "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_platform_uid ON users(platform_uid)",
 
             "ALTER TABLE characters ADD COLUMN personality TEXT",
             "ALTER TABLE characters ADD COLUMN age_group VARCHAR(10)",
