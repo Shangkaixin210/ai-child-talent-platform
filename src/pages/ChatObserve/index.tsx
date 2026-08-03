@@ -3,7 +3,9 @@ import { useSearchParams } from 'react-router-dom'
 
 // AI伯乐·探索空间 聊天模块（独立 Express 进程，端口 3000）
 // 仅开放学生端入口，教师端不可从此处访问
-const NGROK_URL = 'https://activity-postcard-anyone.ngrok-free.dev/login.html?role=student'
+//
+// 本地开发时改这里：把 CHAT_BASE 改成 'http://localhost:3000'
+const CHAT_BASE = 'https://activity-postcard-anyone.ngrok-free.dev'
 
 function ChatObserve() {
   const [searchParams] = useSearchParams()
@@ -11,10 +13,10 @@ function ChatObserve() {
   const [loading, setLoading] = useState(true)
   const [failed, setFailed] = useState(false)
 
-  // 有 sso_token 时使用本地聊天服务地址，否则回退到 ngrok
+  // 有 sso_token → home.html 走 SSO 自动登录；无 token → login.html 手动登录
   const scoutChatUrl = ssoToken
-    ? `http://localhost:3000/home.html?sso_token=${encodeURIComponent(ssoToken)}`
-    : NGROK_URL
+    ? `${CHAT_BASE}/home.html?sso_token=${encodeURIComponent(ssoToken)}`
+    : `${CHAT_BASE}/login.html?role=student`
 
   return (
     <main style={{ minHeight: '100vh', background: '#f8f7ff', position: 'relative' }}>
