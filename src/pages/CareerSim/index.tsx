@@ -16,6 +16,12 @@ function CareerSim() {
     return `${careerAppUrl}${join}sso_token=${encodeURIComponent(token)}`
   }, [searchParams])
 
+  // 总平台跳转时会带上短期 sso_token，把它传给 iframe 内的职业体验模块用于身份识别；
+  // 无 token（直接访问）时也正常加载，职业体验内部会显示自己的登录页。
+  const careerAppUrl = ssoToken
+    ? `${careerAppBaseUrl}?sso_token=${encodeURIComponent(ssoToken)}`
+    : careerAppBaseUrl
+
   return (
     <main style={{ minHeight: '100vh', background: '#fff9ee', position: 'relative' }}>
       {loading && !failed && (
