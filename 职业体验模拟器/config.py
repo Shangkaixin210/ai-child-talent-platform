@@ -30,6 +30,10 @@ DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 # 教师关注队列使用独立密钥保护；未配置时，相关接口保持关闭，避免把学生安全记录暴露出来。
 TEACHER_REVIEW_KEY = os.getenv("TEACHER_REVIEW_KEY", "").strip()
 
+# 统一登录密钥：仅从本机 .env 或部署环境读取，绝不写入代码仓库。
+# 它用于验证总平台签发的短期 sso_token，不替代本模块自己的会话 token。
+PLATFORM_SSO_SECRET = os.getenv("PLATFORM_SSO_SECRET", "").strip()
+
 DECISION_TOO_FAST_MS = 1000
 DECISION_TOO_SLOW_MS = 300000
 MAX_MODIFICATION_COUNT = 10

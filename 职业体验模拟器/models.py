@@ -14,7 +14,7 @@ class Base(DeclarativeBase):
 
 
 class User(Base):
-    """用户账号 —— 正式的登录身份，替代浏览器 token 的轻量关联。"""
+    """职业模块用户档案，由统一平台身份或旧版本地账号关联。"""
     __tablename__ = "users"
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     username = Column(String(30), unique=True, nullable=False, index=True)
@@ -22,6 +22,8 @@ class User(Base):
     salt = Column(String(64), nullable=False)
     display_name = Column(String(50), nullable=False)
     age = Column(Integer, nullable=False)
+    # 统一平台学生标识。为空代表迁移前的旧本地账号；非空时一人一条职业档案。
+    platform_uid = Column(String(64), unique=True, nullable=True, index=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     sessions = relationship("Session", back_populates="user")
 

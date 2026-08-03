@@ -23,6 +23,7 @@ from services import generate_follow_up_question, build_follow_up_feedback, anal
 from auth import (
     set_db_sessionmaker, get_db, get_current_user, get_current_user_optional,
     create_user, authenticate_user, invalidate_token, generate_auth_token, claim_old_sessions,
+    verify_platform_sso_token, get_user_by_platform_uid, create_sso_user,
 )
 
 engine = create_async_engine(DATABASE_URL, echo=DEBUG)
@@ -53,6 +54,14 @@ async def init_db():
                 await conn.execute(text("ALTER TABLE sessions ADD COLUMN user_id VARCHAR(36) REFERENCES users(id) ON DELETE SET NULL"))
         except Exception as exc:
             print(f"user_id migration skipped: {exc}", file=sys.stderr)
+        # 统一登录身份关联：旧本地账号保持 platform_uid 为空，新体验记录按此字段绑定。
+        try:
+            user_cols = (await conn.execute(text("PRAGMA table_info(users)"))).mappings().all()
+            if "platform_uid" not in {row["name"] for row in user_cols}:
+                await conn.execute(text("ALTER TABLE users ADD COLUMN platform_uid VARCHAR(64)"))
+            await conn.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS ix_users_platform_uid ON users(platform_uid)"))
+        except Exception as exc:
+            print(f"platform_uid migration skipped: {exc}", file=sys.stderr)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -130,13 +139,44 @@ async def page_workday(request: Request, career_id: str):
 
 @app.get("/login", response_class=HTMLResponse)
 async def page_login(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    # 登录入口已统一由总平台处理；保留路由仅为兼容旧书签。
+    return RedirectResponse(url="/", status_code=302)
 
 @app.get("/report/{session_id}", response_class=HTMLResponse)
 async def page_report(request: Request, session_id: str):
     return templates.TemplateResponse("report.html", {"request": request, "session_id": session_id})
 
 # === API: AUTH ===
+
+@app.post("/api/auth/sso-login")
+async def api_auth_sso_login(payload: dict = Body(...)):
+    """用总平台签发的短期 JWT 自动换取职业模块会话 token。"""
+    sso_token = str(payload.get("sso_token", "")).strip()
+    try:
+        claims = verify_platform_sso_token(sso_token)
+    except ValueError as exc:
+        raise HTTPException(status_code=401, detail=str(exc))
+
+    platform_uid = str(claims.get("platformUid", "")).strip()
+    display_name = str(claims.get("username", "")).strip() or platform_uid
+    async with async_session() as db:
+        user = await get_user_by_platform_uid(db, platform_uid)
+        if user is None:
+            user = await create_sso_user(db, platform_uid, display_name)
+        elif display_name and user.display_name != display_name:
+            user.display_name = display_name[:50]
+
+        token_str = generate_auth_token()
+        db.add(AuthToken(id=str(uuid.uuid4()), user_id=user.id, token=token_str))
+        await db.commit()
+
+    return {
+        "token": token_str,
+        "user": {
+            "id": user.id, "display_name": user.display_name,
+            "age": user.age, "platform_uid": platform_uid,
+        },
+    }
 
 @app.post("/api/auth/register")
 async def api_auth_register(payload: dict = Body(...)):
@@ -220,6 +260,7 @@ async def api_auth_me(user: User | None = Depends(get_current_user_optional)):
         "user": {
             "id": user.id, "username": user.username,
             "display_name": user.display_name, "age": user.age,
+            "platform_uid": user.platform_uid,
         },
     }
 
@@ -452,12 +493,10 @@ async def api_latest_sessions_by_career(
 async def api_start_session(
     student_name: str=Form(...), age: int=Form(...), career_id: str=Form(...),
     student_token: str=Form(""),
-    user: User | None = Depends(get_current_user_optional),
+    user: User = Depends(get_current_user),
 ):
-    # 已登录用户：自动用账号信息覆盖表单（表单参数仍有值作为 fallback）
-    if user is not None:
-        student_name = user.display_name
-        age = user.age
+    # 姓名来自统一平台；年龄由孩子首次进入职业体验时选择，并保存到职业档案。
+    student_name = user.display_name
 
     if not student_name or len(student_name.strip())<1 or len(student_name.strip())>30:
         raise HTTPException(400, detail="名字长度需要在1-30个字符之间")
@@ -472,7 +511,8 @@ async def api_start_session(
         s = Session(id=sid, student_name=student_name.strip(), age=age,
             career_id=career_id, career_name=career["name"],
             student_token=token if token else None,
-            user_id=user.id if user else None)
+            user_id=user.id)
+        user.age = age
         db.add(s); await db.commit()
     return {"session_id":sid, "career":{"id":career["id"],"name":career["name"],
         "total_scenarios":len(SCENARIOS[career_id])}, "redirect_url":f"/scenario/{sid}/0"}
