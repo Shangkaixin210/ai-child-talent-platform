@@ -18,6 +18,25 @@ const AuthContext = createContext<AuthState>({
   setUser: () => {},
 });
 
+// React StrictMode mounts effects twice in development. Keep one in-flight
+// exchange per platform token so both mounts share the same backend request.
+let pendingSSOLogin: {
+  token: string;
+  promise: ReturnType<typeof ssoLogin>;
+} | null = null;
+
+function exchangePlatformToken(token: string) {
+  if (pendingSSOLogin?.token === token) return pendingSSOLogin.promise;
+
+  const promise = ssoLogin(token);
+  pendingSSOLogin = { token, promise };
+  const clearPending = () => {
+    if (pendingSSOLogin?.promise === promise) pendingSSOLogin = null;
+  };
+  promise.then(clearPending, clearPending);
+  return promise;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       try {
         if (platformToken) {
-          const result = await ssoLogin(platformToken);
+          const result = await exchangePlatformToken(platformToken);
           if (!active) return;
           localStorage.setItem('auth_token', result.token);
           setUser(result.user);

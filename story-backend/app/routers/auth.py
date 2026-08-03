@@ -3,6 +3,7 @@ import secrets
 from fastapi import APIRouter, Depends, HTTPException, status
 from jose import ExpiredSignatureError, JWTError, jwt
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import create_token, get_current_user, hash_password, verify_password
@@ -81,9 +82,24 @@ async def sso_login(req: SSOLoginRequest, db: AsyncSession = Depends(get_db)):
             has_seen_onboarding=True,
         )
         db.add(user)
-        await db.commit()
-        await db.refresh(user)
-        show_onboarding = True
+        try:
+            await db.commit()
+            await db.refresh(user)
+            show_onboarding = True
+        except IntegrityError:
+            # Another request for the same first-time SSO user may win the
+            # insert race (for example React StrictMode in development).
+            # Roll back this transaction and reuse the row it created.
+            await db.rollback()
+            result = await db.execute(
+                select(User).where(User.platform_uid == platform_uid)
+            )
+            user = result.scalar_one_or_none()
+            if user is None:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="统一登录账号创建冲突，请重试",
+                )
     elif platform_name and (not user.display_name or user.display_name == user.username):
         user.display_name = platform_name
         await db.commit()
