@@ -1,0 +1,9 @@
+server/.env
+server/data/*.json
+.claude/
+server/.claude/
+node_modules/
+dist/
+__pycache__/
+*.pyc
+db_logs.json
