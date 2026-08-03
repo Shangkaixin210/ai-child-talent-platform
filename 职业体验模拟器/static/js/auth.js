@@ -3,7 +3,39 @@
  */
 window.Auth = (function(){
   var TOKEN_KEY = 'career-auth-token-v1';
+  var SSO_SESSION_KEY = 'career-sso-session-v1';
   var _user = null;
+
+  function platformLoginUrl(){
+    return window.location.protocol + '//' + window.location.hostname + ':5173/platform-login';
+  }
+
+  function removeSsoTokenFromUrl(){
+    var url = new URL(window.location.href);
+    url.searchParams.delete('sso_token');
+    window.history.replaceState({}, document.title, url.pathname + url.search + url.hash);
+  }
+
+  function showPlatformEntryGuide(){
+    if (document.getElementById('sso-entry-guide')) return;
+    var overlay = document.createElement('div');
+    overlay.id = 'sso-entry-guide';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML =
+      '<div style="max-width:520px;padding:42px 30px;border-radius:28px;background:#fffdf8;box-shadow:0 24px 70px rgba(86,58,40,.20);text-align:center;color:#5e493a">'+
+        '<div style="font-size:54px;line-height:1">🗺️</div>'+
+        '<h1 style="margin:18px 0 10px;color:#b86b45;font-size:28px">从星芽成长进入吧</h1>'+
+        '<p style="margin:0;line-height:1.8;font-size:16px">职业体验使用总平台的统一登录。这样你的探索足迹和成长报告才能被安全地保存到同一个成长档案中。</p>'+
+        '<button id="sso-entry-btn" type="button" style="margin-top:24px;border:0;border-radius:999px;padding:14px 24px;background:#e9854d;color:white;font-size:16px;font-weight:700;cursor:pointer">前往总平台登录</button>'+
+      '</div>';
+    Object.assign(overlay.style, {position:'fixed', inset:'0', zIndex:'99999', display:'grid', placeItems:'center', padding:'20px', background:'rgba(61,45,35,.48)'});
+    document.body.appendChild(overlay);
+    document.getElementById('sso-entry-btn').onclick = function(){
+      try { window.top.location.href = platformLoginUrl(); }
+      catch (_) { window.location.href = platformLoginUrl(); }
+    };
+  }
 
   function getToken(){
     return localStorage.getItem(TOKEN_KEY) || '';
@@ -25,19 +57,25 @@ window.Auth = (function(){
   function fetchWithAuth(url, options){
     options = options || {};
     var token = getToken();
-    var studentToken = localStorage.getItem('career-student-token-v1') || '';
     options.headers = options.headers || {};
     if (token) {
       options.headers['Authorization'] = 'Bearer ' + token;
     }
-    // 匿名体验也必须带上当前浏览器的私有标识；服务端据此限制记录范围。
-    if (studentToken) options.headers['X-Student-Token'] = studentToken;
     return fetch(url, options);
   }
 
   function checkAuth(){
     var token = getToken();
-    if (!token) return Promise.resolve(null);
+    var isSsoSession = localStorage.getItem(SSO_SESSION_KEY) === '1';
+    if (!token || !isSsoSession) {
+      var ssoToken = new URLSearchParams(window.location.search).get('sso_token');
+      if (ssoToken) return ssoLogin(ssoToken);
+      _user = null;
+      setToken('');
+      updateNavUI();
+      showPlatformEntryGuide();
+      return Promise.resolve(null);
+    }
     return fetch('/api/auth/me', {
       headers: {'Authorization': 'Bearer ' + token}
     }).then(function(r){ return r.ok ? r.json() : null; })
@@ -50,7 +88,40 @@ window.Auth = (function(){
         _user = null;
         updateNavUI();
         return null;
-      }).catch(function(){ return null; });
+      }).catch(function(){
+        _user = null;
+        setToken('');
+        localStorage.removeItem(SSO_SESSION_KEY);
+        showPlatformEntryGuide();
+        return null;
+      });
+  }
+
+  function ssoLogin(ssoToken){
+    return fetch('/api/auth/sso-login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({sso_token: ssoToken})
+    }).then(function(r){
+      return r.json().then(function(d){
+        if (!r.ok) throw new Error(d.detail || '统一登录已过期，请重新登录');
+        return d;
+      });
+    }).then(function(d){
+      setToken(d.token);
+      localStorage.setItem(SSO_SESSION_KEY, '1');
+      _user = d.user;
+      removeSsoTokenFromUrl();
+      updateNavUI();
+      if (window.onAuthChanged) window.onAuthChanged(d.user);
+      return d.user;
+    }).catch(function(){
+      _user = null;
+      setToken('');
+      localStorage.removeItem(SSO_SESSION_KEY);
+      showPlatformEntryGuide();
+      return null;
+    });
   }
 
   function login(username, password){
@@ -90,10 +161,12 @@ window.Auth = (function(){
       headers: {'Authorization': 'Bearer ' + token}
     }).then(function(){
       setToken('');
+      localStorage.removeItem(SSO_SESSION_KEY);
       _user = null;
       updateNavUI();
     }).catch(function(){
       setToken('');
+      localStorage.removeItem(SSO_SESSION_KEY);
       _user = null;
       updateNavUI();
     });
@@ -229,24 +302,7 @@ window.Auth = (function(){
   }
 
   function initNavButton(){
-    var btn = document.getElementById('auth-nav-btn');
-    if (!btn) {
-      btn = document.createElement('button');
-      btn.id = 'auth-nav-btn';
-      btn.type = 'button';
-      btn.className = 'auth-nav-btn';
-      btn.innerHTML = '<span>登录 / 注册</span>';
-      btn.title = '登录以保存你的体验记录';
-      btn.onclick = function(){ showLoginModal('login'); };
-      // Insert before the font-size control
-      var fc = document.getElementById('font-size-control');
-      if (fc) {
-        fc.parentNode.insertBefore(btn, fc);
-      } else {
-        document.body.appendChild(btn);
-      }
-    }
-    updateNavUI();
+    // 本模块不再创建独立登录/注册按钮；身份由总平台统一提供。
   }
 
   function escHtml(s){
@@ -265,6 +321,7 @@ window.Auth = (function(){
     getUser: getUser,
     fetch: fetchWithAuth,
     checkAuth: checkAuth,
+    ssoLogin: ssoLogin,
     login: login,
     register: register,
     logout: logout,
