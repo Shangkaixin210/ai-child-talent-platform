@@ -877,5 +877,9 @@ _llm_service: LLMService | None = None
 def get_llm_service() -> LLMService:
     global _llm_service
     if _llm_service is None:
+        if not settings.llm_api_key.strip():
+            raise LLMServiceError(
+                "尚未配置 LLM_API_KEY，请在 story-backend/.env 中填写 DeepSeek 密钥后重启后端"
+            )
         _llm_service = LLMService()
     return _llm_service

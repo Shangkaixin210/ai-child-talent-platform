@@ -8,6 +8,10 @@ import os
 import hashlib
 import secrets
 import uuid
+import base64
+import hmac
+import json
+import re
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -16,6 +20,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from models import User, AuthToken, Session
+from config import PLATFORM_SSO_SECRET
 
 
 # ---- Password hashing (pbkdf2_hmac, stdlib only) ----
@@ -72,6 +77,74 @@ async def create_user(
         salt=salt_hex,
         display_name=display_name.strip()[:50] or username,
         age=age,
+    )
+    db.add(user)
+    await db.flush()
+    return user
+
+
+# ---- Platform SSO ----
+
+def _base64url_decode(value: str) -> bytes:
+    return base64.urlsafe_b64decode(value + "=" * (-len(value) % 4))
+
+
+def verify_platform_sso_token(sso_token: str) -> dict:
+    """Verify the total-platform HS256 JWT without adding a new Python dependency."""
+    if not PLATFORM_SSO_SECRET:
+        raise ValueError("职业体验尚未配置统一登录密钥")
+    try:
+        header_b64, payload_b64, signature_b64 = sso_token.split(".")
+        header = json.loads(_base64url_decode(header_b64).decode("utf-8"))
+        payload = json.loads(_base64url_decode(payload_b64).decode("utf-8"))
+        if header.get("alg") != "HS256":
+            raise ValueError("不支持的登录凭证算法")
+        signing_input = f"{header_b64}.{payload_b64}".encode("ascii")
+        expected = hmac.new(PLATFORM_SSO_SECRET.encode("utf-8"), signing_input, hashlib.sha256).digest()
+        actual = _base64url_decode(signature_b64)
+        if not hmac.compare_digest(expected, actual):
+            raise ValueError("登录凭证签名无效")
+        expires_at = payload.get("exp")
+        if not isinstance(expires_at, (int, float)) or datetime.now(timezone.utc).timestamp() >= expires_at:
+            raise ValueError("登录凭证已过期")
+        if not str(payload.get("platformUid", "")).strip():
+            raise ValueError("登录凭证缺少平台用户标识")
+        return payload
+    except ValueError:
+        raise
+    except Exception as exc:
+        raise ValueError("登录凭证无效") from exc
+
+
+async def get_user_by_platform_uid(db: AsyncSession, platform_uid: str) -> User | None:
+    result = await db.execute(select(User).where(User.platform_uid == platform_uid))
+    return result.scalar_one_or_none()
+
+
+async def create_sso_user(
+    db: AsyncSession,
+    platform_uid: str,
+    display_name: str,
+) -> User:
+    """Create the minimal local profile needed to bind career records to a platform user."""
+    clean_uid = platform_uid.strip()
+    base_username = "sso_" + re.sub(r"[^a-zA-Z0-9_]", "", clean_uid.lower())[:15]
+    username = base_username or "sso_user"
+    suffix = 1
+    while (await db.execute(select(User).where(User.username == username))).scalar_one_or_none():
+        suffix += 1
+        username = f"{base_username[:16]}_{suffix}"
+
+    password_hash, salt = hash_password(secrets.token_urlsafe(32))
+    user = User(
+        id=str(uuid.uuid4()),
+        username=username,
+        password_hash=password_hash,
+        salt=salt,
+        display_name=(display_name or clean_uid)[:50],
+        # 总平台当前不保存年龄；第一次开启职业情境时由学生选择并写回职业档案。
+        age=10,
+        platform_uid=clean_uid,
     )
     db.add(user)
     await db.flush()
