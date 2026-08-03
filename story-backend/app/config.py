@@ -28,7 +28,9 @@ class Settings(BaseSettings):
 
     # SSO token verification. This is deliberately separate from jwt_secret_key:
     # the platform token proves identity, then this service issues its own token.
-    platform_sso_secret: str = ""
+    # Keep local clones compatible with the platform-auth development fallback.
+    # Production deployments must override this value through the environment.
+    platform_sso_secret: str = "platform-sso-demo-secret-do-not-use-in-production"
     platform_sso_algorithm: str = "HS256"
 
     # Story config

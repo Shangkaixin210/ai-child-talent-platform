@@ -9,12 +9,19 @@ export default function Header() {
   const isHome = location.pathname.replace(/\/+$/, '') === '/story-create';
   return (
     <header className="app-header">
-      <Link to="/story-create" className="header-logo">
-        <span className="logo-icon"><PngIcon name="story-book" size={40} /></span>
-        <svg className="logo-star logo-star-1" viewBox="0 0 18 18"><polygon points="9,1 10.5,6 16,6 11.5,9.5 13,15 9,11.5 5,15 6.5,9.5 2,6 7.5,6" fill="#FFD166" /></svg>
-        <svg className="logo-star logo-star-2" viewBox="0 0 12 12"><polygon points="6,1 7,4.5 10.5,4.5 7.5,6.5 8.5,10.5 6,8 3.5,10.5 4.5,6.5 1.5,4.5 5,4.5" fill="#FFB3D0" /></svg>
-        <span className="logo-text">AI 伯乐</span>
-      </Link>
+      <div className="header-brand">
+        {isHome && (
+          <button className="header-platform" onClick={() => navigate('/login')}>
+            <span aria-hidden="true">←</span> 返回平台
+          </button>
+        )}
+        <Link to="/story-create" className="header-logo">
+          <span className="logo-icon"><PngIcon name="story-book" size={40} /></span>
+          <svg className="logo-star logo-star-1" viewBox="0 0 18 18"><polygon points="9,1 10.5,6 16,6 11.5,9.5 13,15 9,11.5 5,15 6.5,9.5 2,6 7.5,6" fill="#FFD166" /></svg>
+          <svg className="logo-star logo-star-2" viewBox="0 0 12 12"><polygon points="6,1 7,4.5 10.5,4.5 7.5,6.5 8.5,10.5 6,8 3.5,10.5 4.5,6.5 1.5,4.5 5,4.5" fill="#FFB3D0" /></svg>
+          <span className="logo-text">AI 伯乐</span>
+        </Link>
+      </div>
       {user && (
         <div className="header-user">
           <span className="header-greeting">{user.display_name || user.username}</span>
