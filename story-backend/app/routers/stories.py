@@ -308,9 +308,9 @@ async def story_turn(
     else:
         # First turn: add a system-level trigger for the AI to start
         messages.append({"role": "user", "content": "请开始我们的故事吧！"})
-    # 4. LLM service with character + personality context
-    llm = get_llm_service()
-
+    # 4. LLM service with character + personality context.
+    # Created inside the generator so a missing API key surfaces as a friendly
+    # SSE error event instead of a hard 500 from the global handler.
     async def event_generator():
         narrative_parts = []
         question_text = ""
@@ -323,6 +323,8 @@ async def story_turn(
             yield f"event: safety_notice\ndata: {json.dumps({'message': INPUT_BLOCK_MESSAGE, 'level': 'mild'}, ensure_ascii=False)}\n\n"
 
         try:
+            llm = get_llm_service()
+
             # Story Fairy and Talent Evaluator analyze the child's contribution
             # together. Persist the observation before the director starts so
             # evidence survives director/network failures and early page exits.
